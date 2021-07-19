@@ -1,33 +1,76 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
-class Auth extends CI_Controller {
+class Auth extends CI_Controller
+{
 
-	public function register()
-	{	
-		$this->load->library('form_validation');
+    public function register()
+    {
+        $this->load->library('form_validation');
 
-        $this->form_validation->set_message('is_unique','This email already exists!');
-        
-		$this->form_validation->set_rules('name','Name', 'required');
-		$this->form_validation->set_rules('email','Email', 'required|valid_email|is_unique[user.email]');
-		$this->form_validation->set_rules('password','Password', 'required');
-		$this->form_validation->set_rules('conPassword','Confirm Password', 'required|matches[password]');
-		$this->form_validation->set_error_delimiters('<div class="text-danger">','</div>');
+        $this->form_validation->set_message('is_unique', 'This email already exists!');
 
-		if($this->form_validation->run()){
+        $this->form_validation->set_rules('name', 'Name', 'required');
+        $this->form_validation->set_rules('email', 'Email', 'required|valid_email|is_unique[user.email]');
+        $this->form_validation->set_rules('password', 'Password', 'required');
+        $this->form_validation->set_rules('conPassword', 'Confirm Password', 'required|matches[password]');
+        $this->form_validation->set_error_delimiters('<div class="text-danger">', '</div>');
+
+        if ($this->form_validation->run()) {
             $this->load->model('Register_model');
-            $formArray=array();
-			$formArray['name'] = $this->input->post('name');
-			$formArray['email'] = $this->input->post('email');
-			$formArray['password'] = $this->input->post('password');
+            $formArray = array();
+            $formArray['name'] = $this->input->post('name');
+            $formArray['email'] = $this->input->post('email');
+            $formArray['password'] = md5($this->input->post('password'));
             $this->Register_model->register($formArray);
 
-            $this->session->set_flashdata('msg','Your account has been created successfully!');
-            redirect(base_url().'index.php/Welcome/index');
-		} else{
-			// echo validation_errors();
-			$this->load->view('register');
-		}
-	}
-	}
+            $this->session->set_flashdata('msg', 'Your account has been created successfully!');
+            redirect(base_url() . 'index.php/Welcome/index');
+        } else {
+            // echo validation_errors();
+            $this->load->view('register');
+        }
+    }
+
+
+    public function login()
+    {
+        $this->load->library('form_validation');
+
+        $this->form_validation->set_rules('email', 'Email', 'required|valid_email');
+        $this->form_validation->set_rules('password', 'Password', 'required');
+        $this->form_validation->set_error_delimiters('<div class="text-danger">', '</div>');
+
+        if ($this->form_validation->run()) {
+            $this->load->model('Register_model');
+          
+            $email = $this->input->post('email');
+            $password = md5($this->input->post('password'));
+
+            if ($this->Register_model->isValidate($email, $password)) {
+                $this->session->set_userdata('email',$email);
+                return redirect('Auth/welcome');
+            } else {
+                $this->session->set_flashdata('msg', 'Invalid credentials!');
+                redirect(base_url() . 'index.php/Welcome/login');
+            }
+
+        } else {
+            // echo validation_errors();
+            $this->load->view('login');
+        }
+    }
+
+    public function welcome(){
+        if(! $this->session->userdata('email'))
+            return redirect('Welcome/login');
+
+        $this->load->view('dashboard');
+        
+    }
+   
+    public function logout(){
+        $this->session->unset_userdata('email');
+        return redirect('Welcome/login');
+    }
+}

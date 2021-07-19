@@ -50,6 +50,7 @@
                         <?php
                         echo form_submit(['type' => 'submit', 'class' => 'btn btn-primary mt-3', 'value' => 'Submit']);
                         echo form_reset(['type' => 'reset', 'class' => 'btn btn-danger mt-3', 'value' => 'Reset']);
+                        echo anchor('Welcome/login/', 'Already have an account? Click here to login', 'class="link-class"');
                         ?>
                     </div>
                 </div>
