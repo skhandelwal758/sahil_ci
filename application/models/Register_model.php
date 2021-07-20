@@ -17,4 +17,16 @@ class Register_model extends CI_Model
             return false;
         }
     }
+
+    public function verifyEmail($email){
+        $query = $this->db->select("name,token")
+            ->where(['email' => $email])
+            ->get('user');
+        
+        if($query->num_rows()){
+            return $query->row();
+        } else{
+            return false;
+        }
+    }
 }
